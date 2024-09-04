@@ -320,22 +320,22 @@ namespace Unsplasharp.Models {
     /// Represents a geographical position (latitude, longitude).
     /// </summary>
     public class Position {
-        private int _Latitude;
+        private double _Latitude;
 
         /// <summary>
         /// Geographical latitude.
         /// </summary>
-        public int Latitude {
+        public double Latitude {
             get { return _Latitude; }
             set { _Latitude = value; }
         }
 
-        private int _Longitude;
+        private double _Longitude;
 
         /// <summary>
         /// Geographical longitude.
         /// </summary>
-        public int Longitude {
+        public double Longitude {
             get { return _Longitude; }
             set { _Longitude = value; }
         }

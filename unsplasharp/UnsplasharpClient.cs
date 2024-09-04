@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
@@ -7,6 +6,8 @@ using Unsplasharp.Models;
 using System.Linq;
 using System;
 using System.Collections.Concurrent;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace Unsplasharp {
     /// <summary>
@@ -374,20 +375,20 @@ namespace Unsplasharp {
 
             try {
                 string responseBodyAsText = await Fetch(url);
-                var data = JObject.Parse(responseBodyAsText);
+                var data = JsonNode.Parse(responseBodyAsText);
 
                 return new PhotoStats() {
                     Id = (string)data["id"],
                     Downloads = new StatsData() {
-                        Total = int.Parse((string)data["downloads"]["total"]),
+                        Total = (int)data["downloads"]["total"],
                         Historical = ExtractHistorical(data["downloads"])
                     },
                     Views = new StatsData() {
-                        Total = int.Parse((string)data["views"]["total"]),
+                        Total = (int)data["views"]["total"],
                         Historical = ExtractHistorical(data["views"])
                     },
                     Likes = new StatsData() {
-                        Total = int.Parse((string)data["likes"]["total"]),
+                        Total = (int)data["likes"]["total"],
                         Historical = ExtractHistorical(data["likes"])
                     }
                 };
@@ -409,7 +410,7 @@ namespace Unsplasharp {
             var response = await Fetch(url);
 
             if (response == null) return null;
-            var data = JObject.Parse(response);
+            var data = JsonNode.Parse(response);
 
             return (string)data["url"];
         }
@@ -439,9 +440,9 @@ namespace Unsplasharp {
 
             try {
                 var responseBodyAsText = await Fetch(url);
-                var data = JArray.Parse(responseBodyAsText);
+                var data = JsonNode.Parse(responseBodyAsText).AsArray();
 
-                foreach (JObject rawPhoto in data) {
+                foreach (JsonNode rawPhoto in data) {
                     var photo = ExtractPhoto(rawPhoto);
                     listPhotos.Add(photo);
                 }
@@ -462,7 +463,7 @@ namespace Unsplasharp {
             var response = await Fetch(url);
 
             if (response == null) return null;
-            var data = JObject.Parse(response);
+            var data = JsonNode.Parse(response);
 
             var photo = ExtractPhoto(data);
             return photo;
@@ -481,9 +482,9 @@ namespace Unsplasharp {
 
             try {
                 var responseBodyAsText = await Fetch(url);
-                var jsonList = JArray.Parse(responseBodyAsText);
+                var jsonList = JsonNode.Parse(responseBodyAsText).AsArray();
 
-                foreach (JObject item in jsonList) {
+                foreach (var item in jsonList) {
                     var collection = ExtractCollection(item);
                     listCollection.Add(collection);
                 }
@@ -505,7 +506,7 @@ namespace Unsplasharp {
             var response = await Fetch(url);
 
             if (response == null) return null;
-            var data = JObject.Parse(response);
+            var data = JsonNode.Parse(response);
 
             return ExtractCollection(data);
         }
@@ -582,7 +583,7 @@ namespace Unsplasharp {
             var response = await Fetch(url);
 
             if (response == null) return null;
-            var data = JObject.Parse(response);
+            var data = JsonNode.Parse(response);
 
             return ExtractUser(data);
         }
@@ -597,7 +598,7 @@ namespace Unsplasharp {
             var response = await Fetch(url);
 
             if (response == null) return null;
-            var data = JObject.Parse(response);
+            var data = JsonNode.Parse(response);
 
             return (string)data["url"];
         }
@@ -675,20 +676,20 @@ namespace Unsplasharp {
 
             try {
                 string responseBodyAsText = await Fetch(url);
-                var data = JObject.Parse(responseBodyAsText);
+                var data = JsonNode.Parse(responseBodyAsText);
 
                 return new UserStats() {
                     Username = (string)data["username"],
                     Downloads = new StatsData() {
-                        Total = int.Parse((string)data["downloads"]["total"]),
+                        Total = (int)data["downloads"]?["total"],
                         Historical = ExtractHistorical(data["downloads"])
                     },
                     Views = new StatsData() {
-                        Total = int.Parse((string)data["views"]["total"]),
+                        Total = (int)data["views"]?["total"],
                         Historical = ExtractHistorical(data["views"])
                     },
                     Likes = new StatsData() {
-                        Total = int.Parse((string)data["likes"]["total"]),
+                        Total = (int)(data["likes"]?["total"] ?? 0),
                         Historical = ExtractHistorical(data["likes"])
                     }
                 };
@@ -794,13 +795,13 @@ namespace Unsplasharp {
 
             try {
                 var responseBodyAsText = await Fetch(url);
-                var data = JObject.Parse(responseBodyAsText);
-                var results = (JArray)data["results"];
+                var data = JsonNode.Parse(responseBodyAsText);
+                var results = data["results"].AsArray();
 
                 LastPhotosSearchTotalResults = (int)data["total"];
                 LastPhotosSearchTotalPages = (int)data["total_pages"];
 
-                foreach (JObject item in results) {
+                foreach (var item in results) {
                     var photo = ExtractPhoto(item);
                     listPhotos.Add(photo);
                 }
@@ -824,13 +825,13 @@ namespace Unsplasharp {
 
             try {
                 var responseBodyAsText = await Fetch(url);
-                var data = JObject.Parse(responseBodyAsText);
-                var results = (JArray)data["results"];
+                var data = JsonNode.Parse(responseBodyAsText);
+                var results = data["results"].AsArray();
 
                 LastCollectionsSearchTotalResults = (int)data["total"];
                 LastCollectionsSearchTotalPages = (int)data["total_pages"];
 
-                foreach (JObject item in results) {
+                foreach (var item in results) {
                     var collection = ExtractCollection(item);
                     listCollections.Add(collection);
                 }
@@ -854,13 +855,13 @@ namespace Unsplasharp {
 
             try {
                 var responseBodyAsText = await Fetch(url);
-                var data = JObject.Parse(responseBodyAsText);
-                var results = (JArray)data["results"];
+                var data = JsonNode.Parse(responseBodyAsText);
+                var results = data["results"].AsArray();
 
                 LastUsersSearchTotalResults = (int)data["total"];
                 LastUsersSearchTotalPages = (int)data["total_pages"];
 
-                foreach (JObject item in results) {
+                foreach (var item in results) {
                     var user = ExtractUser(item);
                     listUsers.Add(user);
                 }
@@ -885,20 +886,20 @@ namespace Unsplasharp {
             var response = await Fetch(url);
 
             if (response == null) return null;
-            var data = JObject.Parse(response);
+            var data = JsonNode.Parse(response);
 
             return new UnplashTotalStats() {
-                Photos = double.Parse((string)data["photos"]),
-                Downloads = double.Parse((string)data["downloads"]),
-                Views = double.Parse((string)data["views"]),
-                Likes = double.Parse((string)data["likes"] ?? "0"),
-                Photographers = double.Parse((string)data["photographers"]),
-                Pixels = double.Parse((string)data["pixels"]),
-                DownloadsPerSecond = double.Parse((string)data["downloads_per_second"]),
-                ViewsPerSecond = double.Parse((string)data["views_per_second"]),
-                Developers = int.Parse((string)data["developers"]),
-                Applications = int.Parse((string)data["applications"]),
-                Requests = double.Parse((string)data["requests"])
+                Photos = (double)data["photos"],
+                Downloads = (double)data["downloads"],
+                Views = (double)data["views"],
+                Likes = (double)data["likes"],
+                Photographers = (double)data["photographers"],
+                Pixels = (double)data["pixels"],
+                DownloadsPerSecond = (double)data["downloads_per_second"],
+                ViewsPerSecond = (double)data["views_per_second"],
+                Developers = (int)data["developers"],
+                Applications = (int)data["applications"],
+                Requests = (double)data["requests"]
             };
         }
 
@@ -911,18 +912,18 @@ namespace Unsplasharp {
             var response = await Fetch(url);
 
             if (response == null) return null;
-            var data = JObject.Parse(response);
+            var data = JsonNode.Parse(response);
 
             return new UnplashMonthlyStats() {
-                Downloads = double.Parse((string)data["downloads"]),
-                Views = double.Parse((string)data["views"]),
-                Likes = double.Parse((string)data["likes"] ?? "0"),
-                NewPhotos = double.Parse((string)data["new_photos"]),
-                NewPhotographers = double.Parse((string)data["new_photographers"]),
-                NewPixels = double.Parse((string)data["new_pixels"]),
-                NewDevelopers = int.Parse((string)data["new_developers"]),
-                NewApplications = int.Parse((string)data["new_applications"]),
-                NewRequests = double.Parse((string)data["new_requests"])
+                Downloads = (double)data["downloads"],
+                Views = (double)data["views"],
+                Likes = (double)data["likes"],
+                NewPhotos = (double)data["new_photos"],
+                NewPhotographers = (double)data["new_photographers"],
+                NewPixels = (double)data["new_pixels"],
+                NewDevelopers = (int)data["new_developers"],
+                NewApplications = (int)data["new_applications"],
+                NewRequests = (double)data["new_requests"]
             };
         }
         #endregion others
@@ -984,9 +985,10 @@ namespace Unsplasharp {
                 }).Value;
 
                 response = await http.GetAsync(url);
-                response.EnsureSuccessStatusCode();
                 var responseBodyAsText = await response.Content.ReadAsStringAsync();
+                response.EnsureSuccessStatusCode();
 
+                
                 UpdateRateLimit(response);
 
                 return responseBodyAsText;
@@ -1001,10 +1003,10 @@ namespace Unsplasharp {
         /// </summary>
         /// <param name="data">Data to test.</param>
         /// <returns>True if the data is null</returns>
-        private bool IsNull(JToken data) {
-            return data == null ||
-                   data.Type == JTokenType.Null ||
-                   data.Type == JTokenType.String;
+        private bool IsNull(JsonNode data) {
+            return data == null;
+                   //data.Type == JTokenType.Null ||
+                   //data.Type == JTokenType.String;
         }
 
         /// <summary>
@@ -1016,25 +1018,25 @@ namespace Unsplasharp {
             return !string.IsNullOrEmpty(s) && !string.IsNullOrWhiteSpace(s);
         }
 
-        private int ExtractNumber(JToken data) {
+        private int ExtractNumber(JsonNode data) {
             if (IsNull(data)) return 0;
-            return string.IsNullOrEmpty((string)data) ? 0 : int.Parse((string)data);
+            return (int)data;
         }
 
-        private bool ExtractBoolean(JToken data) {
+        private bool ExtractBoolean(JsonNode data) {
             if (IsNull(data)) return false;
-            return string.IsNullOrEmpty((string)data) ? false : (bool)data;
+            return (bool)data;
         }
 
-        private List<Category> ExtractCategories(JToken data) {
+        private List<Category> ExtractCategories(JsonNode data) {
             var categories = new List<Category>();
             if (IsNull(data)) return categories;
 
-            var dataCategories = (JArray)data;
+            var dataCategories = data.AsArray();
 
             if (dataCategories.Count == 0) return categories;
 
-            foreach (JObject item in dataCategories) {
+            foreach (JsonNode item in dataCategories) {
                 var category = new Category() {
                     Id = (string)item["id"],
                     Title = (string)item["title"],
@@ -1051,7 +1053,7 @@ namespace Unsplasharp {
             return categories;
         }
 
-        private Badge ExtractBadge(JToken data) {
+        private Badge ExtractBadge(JsonNode data) {
             if (IsNull(data)) return null;
 
             return new Badge() {
@@ -1062,7 +1064,7 @@ namespace Unsplasharp {
             };
         }
 
-        private User ExtractUser(JToken data) {
+        private User ExtractUser(JsonNode data) {
             if (IsNull(data)) return null;
 
             return new User() {
@@ -1101,7 +1103,7 @@ namespace Unsplasharp {
             };
         }
 
-        private Exif ExtractExif(JToken data) {
+        private Exif ExtractExif(JsonNode data) {
             if (IsNull(data)) return null;
 
             return new Exif() {
@@ -1113,7 +1115,7 @@ namespace Unsplasharp {
             };
         }
 
-        private Location ExtractLocation(JToken data) {
+        private Location ExtractLocation(JsonNode data) {
             if (IsNull(data)) return null;
 
             return new Location() {
@@ -1123,13 +1125,13 @@ namespace Unsplasharp {
                 Country = (string)data["country"],
 
                 Position = new Position() {
-                    Latitude = IsNull(data["position"]["latitude"]) ? 0 : (int)data["position"]["latitude"],
-                    Longitude = IsNull(data["position"]["longitude"]) ? 0 : (int)data["position"]["longitude"],
+                    Latitude = ((double?)data["position"]["latitude"]) ?? 0,
+                    Longitude = ((double?)data["position"]["longitude"]) ?? 0,
                 }
             };
         }
 
-        private Photo ExtractPhoto(JToken data) {
+        private Photo ExtractPhoto(JsonNode data) {
             if (IsNull(data)) return null;
 
             return new Photo() {
@@ -1171,7 +1173,7 @@ namespace Unsplasharp {
             };
         }
 
-        private Collection ExtractCollection(JToken data) {
+        private Collection ExtractCollection(JsonNode data) {
             if (IsNull(data)) return null;
 
             return new Collection() {
@@ -1199,32 +1201,31 @@ namespace Unsplasharp {
             };
         }
 
-        private StatsHistorical ExtractHistorical(JToken data) {
+        private StatsHistorical ExtractHistorical(JsonNode data) {
             if (IsNull(data)) return null;
 
             return new StatsHistorical() {
-                Change = double.Parse((string)data["historical"]["change"]),
-                Average = string.IsNullOrEmpty((string)data["historical"]["average"]) ? 
-                            0 : int.Parse((string)data["historical"]["average"]),
+                Change = (double)data["historical"]["change"],
+                Average = ((int?)data["historical"]["average"]) ?? 0,
                 Resolution = (string)data["historical"]["resolution"],
-                Quantity = int.Parse((string)data["historical"]["quantity"]),
+                Quantity = (int)data["historical"]["quantity"],
                 Values = ExtractStatsValues(data["historical"]["values"])
             };
         }
 
-        private List<StatsValue> ExtractStatsValues(JToken data) {
+        private List<StatsValue> ExtractStatsValues(JsonNode data) {
             var listStatsValues = new List<StatsValue>();
 
             if (IsNull(data)) return listStatsValues;
 
-            var dataStatsValues = (JArray)data;
+            var dataStatsValues = data.AsArray();
 
             if (dataStatsValues.Count == 0) return listStatsValues;
 
-            foreach (JObject item in dataStatsValues) {
+            foreach (var item in dataStatsValues) {
                 var statsValues = new StatsValue() {
                     Date = (string)item["date"],
-                    Value = double.Parse((string)item["value"])
+                    Value = (double)item["value"]
                 };
 
                 listStatsValues.Add(statsValues);

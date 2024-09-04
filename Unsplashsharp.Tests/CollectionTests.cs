@@ -1,13 +1,12 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Threading.Tasks;
-using Unsplasharp;
-using UnsplashsharpTest.Data;
+﻿using Unsplasharp;
+using Unsplashsharp.Tests.Data;
 
-namespace UnsplashsharpTest {
-    [TestClass]
-    public class CollectionTests {
-        [TestMethod]
-        public async Task GetCollectionTest() {
+namespace Unsplashsharp.Tests;
+
+[TestClass]
+public class CollectionTests {
+    [TestMethod]
+    public async Task GetCollectionTest() {
             var client = new UnsplasharpClient(Credentials.ApplicationId);
             var listCollection = await client.ListCollections();
             var collection = await client.GetCollection(listCollection[0].Id);
@@ -15,8 +14,8 @@ namespace UnsplashsharpTest {
             Assert.IsNotNull(collection);
         }
 
-        [TestMethod]
-        public async Task ListCollectionsTest() {
+    [TestMethod]
+    public async Task ListCollectionsTest() {
             var client = new UnsplasharpClient(Credentials.ApplicationId);
             var listCollection = await client.ListCollections();
             var listCollectionPaged = await client.ListCollections(2);
@@ -28,8 +27,8 @@ namespace UnsplashsharpTest {
             Assert.IsTrue(listCollectionPaged.Count > 0);
         }
 
-        [TestMethod]
-        public async Task ListFeaturedCollectionsTest() {
+    [TestMethod]
+    public async Task ListFeaturedCollectionsTest() {
             var client = new UnsplasharpClient(Credentials.ApplicationId);
             var listFeaturedCollection = await client.ListFeaturedCollections();
             var listFeaturedCollectionPaged = await client.ListFeaturedCollections(2);
@@ -41,8 +40,8 @@ namespace UnsplashsharpTest {
             Assert.IsTrue(listFeaturedCollectionPaged.Count > 0);
         }
 
-        [TestMethod]
-        public async Task GetCollectionPhotosTest() {
+    [TestMethod]
+    public async Task GetCollectionPhotosTest() {
             var client = new UnsplasharpClient(Credentials.ApplicationId);
             var listCollection = await client.ListCollections();
             var collection = await client.GetCollection(listCollection[0].Id);
@@ -52,7 +51,7 @@ namespace UnsplashsharpTest {
             Assert.IsTrue(listPhotos.Count > 0);
         }
 
-        public async Task ListRelatedCollectionsTest() {
+    public async Task ListRelatedCollectionsTest() {
             var client = new UnsplasharpClient(Credentials.ApplicationId);
             var listCollection = await client.ListCollections();
             var collectionsRelated = await client.ListRelatedCollections(listCollection[0].Id);
@@ -60,5 +59,4 @@ namespace UnsplashsharpTest {
             Assert.IsNotNull(collectionsRelated);
             Assert.IsTrue(collectionsRelated.Count > 0);
         }
-    }
 }
